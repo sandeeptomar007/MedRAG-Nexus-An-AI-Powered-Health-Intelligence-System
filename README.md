@@ -10,14 +10,13 @@ medrag/
 │   └── script.js
 │
 ├── backend/
-│   ├── main.py         ← FastAPI server (RAG pipeline)
+│   ├── main.py        ← FastAPI server (RAG pipeline)
+    ├── rag.ipynb       
 │   ├── requirements.txt
-│   └── data/           ← ⚠️ PUT YOUR MEDICAL PDFs HERE
+│   └── data/           ← YOUR MEDICAL PDFs Upload HERE
 │
 └── README.md
 ```
-
----
 
 ## 🚀 Quick Start
 
