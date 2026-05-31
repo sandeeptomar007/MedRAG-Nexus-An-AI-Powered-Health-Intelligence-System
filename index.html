@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedRAG — AI Health Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────────────────── -->
+  <nav class="main-nav">
+    <div class="nav-inner">
+      <div class="logo">
+        <div class="logo-mark">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </div>
+        <span class="logo-text">Med<span>RAG</span></span>
+      </div>
+      <div class="nav-links">
+        <button class="nav-link active" data-page="home" onclick="showPage('home')">Home</button>
+        <button class="nav-link" data-page="stats" onclick="showPage('stats')">Statistics</button>
+        <button class="nav-link" data-page="articles" onclick="showPage('articles')">Articles</button>
+        <button class="nav-link" data-page="about" onclick="showPage('about')">About</button>
+        <button class="nav-link" data-page="terms" onclick="showPage('terms')">Terms</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- HOME PAGE                                                               -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div id="home" class="page active">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-badge">
+              <span></span> Powered by RAG + Local LLM
+            </div>
+            <h1 class="hero-title">
+              Your Personal<br><em>Health Intelligence</em><br>Assistant
+            </h1>
+            <p class="hero-desc">
+              Describe your symptoms and get instant, evidence-based health insights
+              drawn from verified medical literature — right on your device.
+            </p>
+            <div class="hero-actions">
+              <button class="btn-primary" onclick="scrollToPredictor()">Check My Symptoms</button>
+              <button class="btn-ghost" onclick="showPage('about')">Learn More</button>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-card">
+              <div class="hero-card-label">Live Health Overview</div>
+              <div class="hero-stat-row">
+                <div class="hero-stat">
+                  <div class="hero-stat-num" id="totalCases">650M+</div>
+                  <div class="hero-stat-lbl">Total Cases</div>
+                </div>
+                <div class="hero-stat">
+                  <div class="hero-stat-num" id="recovered">630M+</div>
+                  <div class="hero-stat-lbl">Recovered</div>
+                </div>
+              </div>
+              <div class="hero-pulse">
+                <div class="pulse-dot"></div>
+                <span>RAG pipeline active — medical KB loaded</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Symptom Predictor -->
+    <section id="predictor" class="section predictor">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">AI Health Predictor</div>
+          <h2 class="section-title">Describe Your Symptoms</h2>
+          <p class="section-sub">
+            Our RAG system searches verified medical PDFs to provide accurate,
+            context-aware health information.
+          </p>
+        </div>
+
+        <div class="predictor-card">
+          <div class="predictor-grid">
+            <!-- Left: Input -->
+            <div class="predictor-left">
+              <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:24px;">Enter Symptom Details</h3>
+              <div class="form-group">
+                <label class="form-label">
+                  Describe Your Symptoms
+                  <span class="form-hint">Be as specific as possible</span>
+                </label>
+                <textarea id="symptomInput" class="form-textarea" rows="6"
+                  placeholder="e.g., I have had a persistent headache, mild fever (99°F), and sore throat for the past two days. Also feeling fatigue and body aches."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Duration</label>
+                <select id="duration" class="form-select">
+                  <option value="less_than_day">Less than 1 day</option>
+                  <option value="1-3_days">1 – 3 days</option>
+                  <option value="4-7_days">4 – 7 days</option>
+                  <option value="more_than_week">More than 1 week</option>
+                </select>
+              </div>
+              <button id="analyzeBtn" class="analyze-btn" onclick="analyzeSymptoms()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Analyze Symptoms
+              </button>
+            </div>
+
+            <!-- Right: Results -->
+            <div class="predictor-right">
+              <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:24px;">Health Assessment</h3>
+              <div class="result-area">
+                <div id="result-container">
+                  <div class="result-empty">
+                    <div class="result-empty-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p style="font-size:.9rem">
+                      Enter your symptoms on the left and click <strong>Analyze Symptoms</strong>
+                      to receive a personalized health assessment from the medical knowledge base.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Common Conditions -->
+    <section class="section conditions">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Quick Reference</div>
+          <h2 class="section-title">Common Health Conditions</h2>
+          <p class="section-sub">Quick guide for everyday health concerns and home remedies</p>
+        </div>
+
+        <div class="conditions-grid">
+          <!-- Cold -->
+          <div class="cond-card cold">
+            <div class="cond-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+              </svg>
+            </div>
+            <h3 class="cond-name">Common Cold</h3>
+            <p class="cond-desc">Viral infection of the upper respiratory tract causing runny nose, sore throat, and
+              sneezing.</p>
+            <div class="cond-remedies">
+              <div class="cond-remedies-title">Home Remedies</div>
+              <ul>
+                <li>Warm salt water gargle</li>
+                <li>Steam inhalation</li>
+                <li>Ginger tea with honey</li>
+                <li>Plenty of rest and fluids</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Fever -->
+          <div class="cond-card fever">
+            <div class="cond-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 class="cond-name">Fever</h3>
+            <p class="cond-desc">Elevated body temperature — a sign the immune system is fighting infection. Needs
+              monitoring.</p>
+            <div class="cond-remedies">
+              <div class="cond-remedies-title">Home Care</div>
+              <ul>
+                <li>Stay hydrated with water &amp; electrolytes</li>
+                <li>Cool compresses on the forehead</li>
+                <li>Light, breathable clothing</li>
+                <li>Rest in a well-ventilated room</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Headache -->
+          <div class="cond-card head">
+            <div class="cond-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 class="cond-name">Headache</h3>
+            <p class="cond-desc">Pain in the head or neck region — tension, migraine, or cluster types are most common.
+            </p>
+            <div class="cond-remedies">
+              <div class="cond-remedies-title">Relief Tips</div>
+              <ul>
+                <li>Rest in a dark, quiet room</li>
+                <li>Apply cold or warm compress</li>
+                <li>Stay well hydrated</li>
+                <li>Gentle neck and shoulder stretches</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /home -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- STATISTICS PAGE                                                         -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div id="stats" class="page stats-bg">
+    <div class="section container">
+      <div class="section-header">
+        <div class="section-label">Data & Analytics</div>
+        <h2 class="section-title">Global Health Statistics</h2>
+        <p class="section-sub">Live-updating overview of global health trends and disease distribution</p>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Global Cases Trend</div>
+          <div class="chart-card-sub">Cumulative cases in millions — Jan to Jun</div>
+          <div class="chart-wrap"><canvas id="covidChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Disease Category Distribution</div>
+          <div class="chart-card-sub">Proportion of tracked condition types</div>
+          <div class="chart-wrap"><canvas id="diseaseChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon blue">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <div class="kpi-num" id="totalCases2"
+              style="font-family:var(--font-display);font-size:1.6rem;line-height:1">650M+</div>
+            <div class="kpi-lbl">Total Tracked Cases</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div class="kpi-num" id="recovered2" style="font-family:var(--font-display);font-size:1.6rem;line-height:1">
+              630M+</div>
+            <div class="kpi-lbl">Recovered</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div class="kpi-num" id="activeCases"
+              style="font-family:var(--font-display);font-size:1.6rem;line-height:1">20M+</div>
+            <div class="kpi-lbl">Currently Active</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- ARTICLES PAGE                                                           -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div id="articles" class="page articles-bg">
+    <div class="section container">
+      <div class="section-header">
+        <div class="section-label">Health Reads</div>
+        <h2 class="section-title">Featured Articles</h2>
+        <p class="section-sub">Evidence-based health guides for everyday well-being</p>
+      </div>
+
+      <div class="articles-grid">
+        <article class="art-card">
+          <div class="art-img"
+            style="background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=80')">
+          </div>
+          <div class="art-body">
+            <div class="art-tag nutrition">Nutrition</div>
+            <h3 class="art-title">Balanced Diet for a Stronger Immune System</h3>
+            <p class="art-desc">Explore the foods and micronutrients that support your body's natural defenses and
+              promote long-term health.</p>
+            <a href="#" class="art-link">Read More →</a>
+          </div>
+        </article>
+
+        <article class="art-card">
+          <div class="art-img"
+            style="background-image:url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80')">
+          </div>
+          <div class="art-body">
+            <div class="art-tag fitness">Fitness</div>
+            <h3 class="art-title">Morning Routines That Transform Your Energy</h3>
+            <p class="art-desc">Simple exercises and habits to start your day with energy and maintain productivity
+              throughout.</p>
+            <a href="#" class="art-link">Read More →</a>
+          </div>
+        </article>
+
+        <article class="art-card">
+          <div class="art-img"
+            style="background-image:url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&q=80')">
+          </div>
+          <div class="art-body">
+            <div class="art-tag mental">Mental Health</div>
+            <h3 class="art-title">Mindfulness Techniques for Daily Stress Relief</h3>
+            <p class="art-desc">Learn practical mindfulness exercises to reduce stress and improve mental clarity in
+              daily life.</p>
+            <a href="#" class="art-link">Read More →</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- ABOUT PAGE                                                              -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div id="about" class="page about-bg">
+    <div class="section container">
+      <div class="section-header">
+        <div class="section-label">Our Story</div>
+        <h2 class="section-title">About MedRAG</h2>
+        <p class="section-sub">Empowering individuals with accessible, AI-driven healthcare information</p>
+      </div>
+
+      <div class="about-grid">
+        <div>
+          <h3 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:16px;">Our Mission</h3>
+          <p class="about-text">
+            MedRAG combines Retrieval-Augmented Generation with a curated medical knowledge base
+            to give you instant, reliable health insights — no internet required.
+          </p>
+          <p class="about-text">
+            Built for students, researchers, and health-conscious individuals, MedRAG runs
+            entirely on your machine: your symptoms never leave your device.
+          </p>
+          <div class="values-box">
+            <div class="values-title">Our Values</div>
+            <ul class="values-list">
+              <li>Privacy-first — all data stays local</li>
+              <li>Accuracy through verified medical sources</li>
+              <li>Transparency in AI-generated responses</li>
+              <li>Accessibility for all users</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="about-side">
+          <div class="about-stat-card">
+            <div class="about-stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div class="about-stat-num">Medical PDFs</div>
+            <div class="about-stat-lbl">Sourced from verified medical encyclopaedias and references</div>
+          </div>
+          <div class="about-stat-card">
+            <div class="about-stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+              </svg>
+            </div>
+            <div class="about-stat-num">FAISS + MiniLM</div>
+            <div class="about-stat-lbl">Semantic vector search over chunked medical documents</div>
+          </div>
+          <div class="about-stat-card">
+            <div class="about-stat-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="about-stat-num">Flan-T5 LLM</div>
+            <div class="about-stat-lbl">Runs 100% locally — no API keys, no cloud, no cost</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- TERMS PAGE                                                              -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div id="terms" class="page terms-bg">
+    <div class="section container">
+      <div class="section-header">
+        <div class="section-label">Legal</div>
+        <h2 class="section-title">Terms &amp; Conditions</h2>
+        <p class="section-sub">Please read these terms carefully before using MedRAG</p>
+      </div>
+
+      <div class="terms-wrap">
+        <div class="terms-card">
+          <h2>1. Medical Disclaimer</h2>
+          <p>MedRAG provides health information for educational purposes only. The content is not intended to be a
+            substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your
+            physician or other qualified health provider with any questions you may have regarding a medical condition.
+          </p>
+
+          <h2>2. User Responsibilities</h2>
+          <p>Users are responsible for their health decisions and should use the information provided as a guide rather
+            than definitive medical advice. We encourage consulting healthcare professionals for personalised medical
+            guidance.</p>
+
+          <h2>3. Privacy Policy</h2>
+          <p>MedRAG runs entirely locally on your machine. Your symptoms and queries are sent only to the local FastAPI
+            server (127.0.0.1:8000) and are never transmitted to external servers. No personal data is stored or shared.
+          </p>
+
+          <h2>4. Data Sources</h2>
+          <p>All health information is retrieved from the medical PDF files stored in the <code>backend/data/</code>
+            folder. The quality and accuracy of responses depends on the quality of documents provided. Only use
+            authoritative, peer-reviewed medical sources.</p>
+
+          <h2>5. Limitation of Liability</h2>
+          <p>MedRAG shall not be liable for any damages resulting from the use of information provided by this
+            application. Users assume all risk associated with the use of our services. This tool is not a replacement
+            for qualified medical care.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-name">MedRAG</div>
+          <p class="footer-brand-text">
+            Your privacy-first AI health assistant.<br>
+            Powered by RAG, runs entirely on your device.
+          </p>
+        </div>
+        <div>
+          <div class="footer-col-title">Navigation</div>
+          <ul class="footer-links">
+            <li><button onclick="showPage('home')">Home</button></li>
+            <li><button onclick="showPage('stats')">Statistics</button></li>
+            <li><button onclick="showPage('articles')">Articles</button></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Company</div>
+          <ul class="footer-links">
+            <li><button onclick="showPage('about')">About Us</button></li>
+            <li><button onclick="showPage('terms')">Terms</button></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Stay Updated</div>
+          <p class="footer-brand-text" style="margin-bottom:12px;">Subscribe for health tips and product news.</p>
+          <div class="newsletter">
+            <input type="email" placeholder="your@email.com">
+            <button>Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 MedRAG. All rights reserved. · Not a substitute for professional medical advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
