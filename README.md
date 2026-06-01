@@ -118,7 +118,6 @@ User  →  frontend/index.html
 
 - All processing happens on `localhost`
 - No data is sent to external servers
-- No API keys required
 - Symptoms are never logged or stored
 
 ---
