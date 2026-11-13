@@ -20,11 +20,11 @@ medrag/
 
 ## 🚀 Quick Start
 
-### Step 1 — Add Your Medical PDFs
+### Step 1 — Add Medical PDFs
 
-Place your medical reference PDFs inside `backend/data/`.  
+Place medical reference PDFs inside `backend/data/`.  
 Example sources:
-- Gale Encyclopedia of Medicine (what the notebook used)
+- Gale Encyclopedia of Medicine
 - MSD Manual PDFs
 - Any verified clinical reference PDFs
 
